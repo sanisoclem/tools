@@ -13,6 +13,7 @@
 </script>
 
 <svelte:head>
+	<title>Stuff Directory</title>
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
