@@ -9,6 +9,8 @@
 	import { Label } from '$lib/components/ui/label/index.js';
 	import * as RadioGroup from '$lib/components/ui/radio-group/index.js';
 	import { v4 as uuidv4, parse } from 'uuid';
+	import murmur128 from 'murmur-128';
+	import SparkMD5 from 'spark-md5';
 
 	function hexToUint8Array(hexString: string) {
 		// Ensure the hex string has an even length by padding with a leading zero if necessary
@@ -26,11 +28,16 @@
 		if (inputType === 'uuid') return parse(uuidv4());
 		else if (inputType === 'sha256') return hexToUint8Array(sha256(input));
 		else if (inputType === 'sha384') return hexToUint8Array(sha384(input));
-		return hexToUint8Array(sha512(input));
+		else if (inputType === 'sha512') return hexToUint8Array(sha512(input));
+		else if (inputType === 'murmur128') return new Uint8Array(murmur128(input));
+		else if (inputType === 'md5') return hexToUint8Array(SparkMD5.hash(input));
+		throw new Error('Not implemented');
 	}
 
 	const prefix = $props.id();
-	let inputType = $state<'sha256' | 'sha384' | 'sha512' | 'uuid'>('sha256');
+	let inputType = $state<'sha256' | 'sha384' | 'sha512' | 'uuid' | 'md5' | 'murmur128'>(
+		'murmur128'
+	);
 	let inputText = $state('12jH3nnhxhR3zPUcsKaWWZC9ZmZAnKm3GAnFD1xynGJE1d7RkJc');
 	let bytes = $derived(getBytes(inputText, inputType));
 	let encodedCheck = $derived(bs58check.encode(bytes));
@@ -46,6 +53,14 @@
 			<Label for="{prefix}-uuid">UUID V4 (128-bit)</Label>
 		</div>
 		<div class="flex items-center space-x-2">
+			<RadioGroup.Item value="md5" id="{prefix}-md5" />
+			<Label for="{prefix}-md5">MD5 (128-bit)</Label>
+		</div>
+		<div class="flex items-center space-x-2">
+			<RadioGroup.Item value="murmur128" id="{prefix}-murmur128" />
+			<Label for="{prefix}-murmur128">Murmurhash 128</Label>
+		</div>
+		<div class="flex items-center space-x-2">
 			<RadioGroup.Item value="sha256" id="{prefix}-sha256" />
 			<Label for="{prefix}-sha256">SHA 256</Label>
 		</div>
@@ -59,9 +74,9 @@
 		</div>
 	</RadioGroup.Root>
 
-	<p>base58</p>
+	<p>base58 ({encoded.length} chars)</p>
 	<Textarea class="min-w-sm" value={encoded} rows={5} />
 
-	<p>base58check</p>
+	<p>base58check ({encodedCheck.length} chars)</p>
 	<Textarea class="min-w-sm" value={encodedCheck} rows={5} />
 </div>
