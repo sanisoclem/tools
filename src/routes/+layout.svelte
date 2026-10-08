@@ -17,17 +17,17 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<ModeWatcher />
+<ModeWatcher defaultMode="dark" />
 
 <Sidebar.Provider>
 	<AppSidebar bind:currentPage />
-	<Sidebar.Inset>
-		<header class="flex h-16 shrink-0 items-center gap-2 border-b">
+	<Sidebar.Inset class="bg-transparent">
+		<header class="flex h-16 shrink-0 items-center gap-2 border-b-2">
 			<div class="flex items-center gap-2 px-3">
 				<Sidebar.Trigger />
 				<ThemeToggle />
 				<Separator orientation="vertical" class="mr-2 h-4" />
-				{currentPage?.title}
+				<span class="font-display text-xs uppercase">{currentPage?.title}</span>
 			</div>
 		</header>
 		<div></div>

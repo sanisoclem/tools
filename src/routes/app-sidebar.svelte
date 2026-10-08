@@ -1,52 +1,25 @@
 <script lang="ts" module>
-	const data = {
-		navMain: [
-			{
-				title: 'Tools',
-				url: '/tools',
-				items: [
-					{
-						title: 'Base58 Checker',
-						url: '/tools/base58'
-					},
-					{
-						title: 'Base58check Generator',
-						url: '/tools/base58gen'
-					}
-				]
-			},
-			{
-				title: 'Others',
-				url: '#',
-				items: [
-					{
-						title: 'SFX Generator',
-						url: 'https://sfxr.pages.dev'
-					},
-					{
-						title: 'VMCD',
-						url: 'https://vmcd.pages.dev'
-					},
-					{
-						title: 'Save? triangles',
-						url: 'https://sanisoclem.itch.io/triangle-apocalypse'
-					}
-				]
-			}
-		]
-	};
+	import { games, ITCH_PROFILE, sites, tools, type Link } from '$lib/launcher';
+
+	const home: Link = { title: 'Launcher', url: '/', icon: 'bus' };
+
+	const groups = [
+		{ title: 'Tools', url: '/tools', items: tools },
+		{ title: 'Sites', url: '/', items: sites },
+		{ title: 'Games', url: ITCH_PROFILE, items: games }
+	];
 </script>
 
 <script lang="ts">
 	import { page } from '$app/state';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
-	import { BusFront, CodeXml } from '@lucide/svelte/icons';
+	import PixelIcon from '$lib/components/PixelIcon.svelte';
 
 	let { ref = $bindable(null), currentPage = $bindable(), ...restProps } = $props();
 
 	$effect(() => {
-		const flat = data.navMain.flatMap((n) => (n.items ? [n, ...n.items] : [n]));
-		currentPage = flat.find((f) => f.url === page.url.pathname);
+		const flat = [home, ...groups.flatMap((group) => [group, ...group.items])];
+		currentPage = flat.find((link) => link.url === page.url.pathname);
 	});
 </script>
 
@@ -58,13 +31,13 @@
 					{#snippet child({ props })}
 						<a href="/" {...props}>
 							<div
-								class="flex aspect-square size-8 items-center justify-center rounded-lg bg-amber-500 text-sidebar-primary-foreground"
+								class="flex aspect-square size-8 items-center justify-center bg-sidebar-primary text-sidebar-primary-foreground"
 							>
-								<BusFront class="size-7" />
+								<PixelIcon name="bus" class="size-6" />
 							</div>
-							<div class="flex flex-col gap-0.5 leading-none">
-								<span class="font-medium">Stuff Directory</span>
-								<span class="monospace text-xs tracking-widest text-zinc-400">v0.7-sigma</span>
+							<div class="flex flex-col gap-1 leading-none">
+								<span class="font-display text-xs uppercase">Stuff Directory</span>
+								<span class="text-sm tracking-widest text-muted-foreground">v0.8-pixel</span>
 							</div>
 						</a>
 					{/snippet}
@@ -75,28 +48,37 @@
 	<Sidebar.Content>
 		<Sidebar.Group>
 			<Sidebar.Menu>
-				{#each data.navMain as item (item.title)}
+				<Sidebar.MenuItem>
+					<Sidebar.MenuButton isActive={page.url.pathname === home.url}>
+						{#snippet child({ props })}
+							<a href={home.url} {...props}>
+								<PixelIcon name={home.icon} />
+								<span>{home.title}</span>
+							</a>
+						{/snippet}
+					</Sidebar.MenuButton>
+				</Sidebar.MenuItem>
+				{#each groups as group (group.title)}
 					<Sidebar.MenuItem>
-						<Sidebar.MenuButton class="font-medium">
+						<Sidebar.MenuButton class="font-display text-xs uppercase">
 							{#snippet child({ props })}
-								<a href={item.url} {...props}>
-									{item.title}
-								</a>
+								<a href={group.url} {...props}>{group.title}</a>
 							{/snippet}
 						</Sidebar.MenuButton>
-						{#if item.items?.length}
-							<Sidebar.MenuSub>
-								{#each item.items as subItem (subItem.title)}
-									<Sidebar.MenuSubItem>
-										<Sidebar.MenuSubButton isActive={subItem.url === page.url.pathname}>
-											{#snippet child({ props })}
-												<a href={subItem.url} {...props}>{subItem.title}</a>
-											{/snippet}
-										</Sidebar.MenuSubButton>
-									</Sidebar.MenuSubItem>
-								{/each}
-							</Sidebar.MenuSub>
-						{/if}
+						<Sidebar.MenuSub>
+							{#each group.items as item (item.url)}
+								<Sidebar.MenuSubItem>
+									<Sidebar.MenuSubButton isActive={item.url === page.url.pathname}>
+										{#snippet child({ props })}
+											<a href={item.url} {...props}>
+												<PixelIcon name={item.icon} />
+												<span>{item.title}</span>
+											</a>
+										{/snippet}
+									</Sidebar.MenuSubButton>
+								</Sidebar.MenuSubItem>
+							{/each}
+						</Sidebar.MenuSub>
 					</Sidebar.MenuItem>
 				{/each}
 			</Sidebar.Menu>
@@ -108,12 +90,10 @@
 				<Sidebar.MenuButton size="lg">
 					{#snippet child({ props })}
 						<a href="https://github.com/sanisoclem/tools" {...props}>
-							<div class="flex aspect-square size-8 items-center justify-center rounded-lg">
-								<CodeXml class="size-6" />
+							<div class="flex aspect-square size-8 items-center justify-center">
+								<PixelIcon name="code" class="size-6" />
 							</div>
-							<div class="flex flex-col gap-0.5 leading-none">
-								<span class="font-medium">code</span>
-							</div>
+							<span class="font-display text-xs uppercase">code</span>
 						</a>
 					{/snippet}
 				</Sidebar.MenuButton>
